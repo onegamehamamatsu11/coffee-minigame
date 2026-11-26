@@ -27,6 +27,7 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
+      overscroll-behavior: none;
       background: #000;
     }
 
@@ -168,11 +169,13 @@
       resizeUnityGame
     );
 
+
     // 画面回転に対応
     window.addEventListener(
       "orientationchange",
       resizeUnityGame
     );
+
 
     // スマホブラウザの表示領域変更に対応
     if (window.visualViewport) {
@@ -272,7 +275,7 @@
     };
 
 
-    // 描画解像度はUnity標準設定を使用
+    // 描画解像度はUnity標準設定を維持
     // devicePixelRatioの制限なし
     // matchWebGLToCanvasSizeの変更なし
 
