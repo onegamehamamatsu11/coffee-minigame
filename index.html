@@ -163,21 +163,21 @@
     }
 
 
-    // ブラウザサイズ変更に対応
+    // ブラウザサイズ変更
     window.addEventListener(
       "resize",
       resizeUnityGame
     );
 
 
-    // 画面回転に対応
+    // 画面回転
     window.addEventListener(
       "orientationchange",
       resizeUnityGame
     );
 
 
-    // スマホブラウザの表示領域変更に対応
+    // スマホブラウザの表示領域変更
     if (window.visualViewport) {
 
       window.visualViewport.addEventListener(
