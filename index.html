@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  >
+
+  <title>Unity Web Player | OneGame珈琲キッチンカー</title>
+
+  <link rel="shortcut icon" href="TemplateData/favicon.ico">
+  <link rel="stylesheet" href="TemplateData/style.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* Unity全体の表示領域 */
+    #unity-container,
+    #unity-container.unity-desktop,
+    #unity-container.unity-mobile {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      height: 100dvh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      transform: none !important;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* ゲーム画面 */
+    #unity-canvas,
+    #unity-canvas.unity-mobile {
+      display: block !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #000;
+      touch-action: none;
+      outline: none;
+    }
+
+    /* 読み込み画面 */
+    #unity-loading-bar {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      z-index: 10;
+    }
+
+    /* 警告・エラー表示 */
+    #unity-warning {
+      position: absolute !important;
+      top: 10px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      z-index: 100;
+      max-width: 90%;
+      text-align: center;
+      overflow-wrap: anywhere;
+      display: none;
+    }
+
+    /* フッター非表示 */
+    #unity-footer {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="unity-container" class="unity-desktop">
+
+    <canvas
+      id="unity-canvas"
+      width="1080"
+      height="1920"
+      tabindex="-1">
+    </canvas>
+
+    <div id="unity-loading-bar">
+
+      <div id="unity-logo"></div>
+
+      <div id="unity-progress-bar-empty">
+        <div id="unity-progress-bar-full"></div>
+      </div>
+
+    </div>
+
+    <div id="unity-warning"></div>
+
+    <div id="unity-footer">
+      <div id="unity-logo-title-footer"></div>
+      <div id="unity-fullscreen-button"></div>
+      <div id="unity-build-title">
+        OneGame珈琲キッチンカー
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    "use strict";
+
+    const canvas =
+      document.querySelector("#unity-canvas");
+
+    const unityContainer =
+      document.querySelector("#unity-container");
+
+    const loadingBar =
+      document.querySelector("#unity-loading-bar");
+
+    const progressBarFull =
+      document.querySelector("#unity-progress-bar-full");
+
+    const warningBanner =
+      document.querySelector("#unity-warning");
+
+
+    // 画面サイズ自動調整
+    function resizeUnityGame() {
+
+      canvas.style.setProperty(
+        "width",
+        "100%",
+        "important"
+      );
+
+      canvas.style.setProperty(
+        "height",
+        "100%",
+        "important"
+      );
+
+    }
+
+
+    // ブラウザサイズ変更に対応
+    window.addEventListener(
+      "resize",
+      resizeUnityGame
+    );
+
+    // 画面回転に対応
+    window.addEventListener(
+      "orientationchange",
+      resizeUnityGame
+    );
+
+    // スマホブラウザの表示領域変更に対応
+    if (window.visualViewport) {
+
+      window.visualViewport.addEventListener(
+        "resize",
+        resizeUnityGame
+      );
+
+    }
+
+    resizeUnityGame();
+
+
+    // Unity警告・エラー表示
+    function unityShowBanner(msg, type) {
+
+      function updateBannerVisibility() {
+
+        warningBanner.style.display =
+          warningBanner.children.length
+            ? "block"
+            : "none";
+
+      }
+
+      const div = document.createElement("div");
+
+      div.textContent = msg;
+
+      warningBanner.appendChild(div);
+
+      if (type === "error") {
+
+        div.style.cssText =
+          "background:red;color:white;padding:10px;";
+
+      } else {
+
+        if (type === "warning") {
+
+          div.style.cssText =
+            "background:yellow;color:black;padding:10px;";
+
+        }
+
+        setTimeout(() => {
+
+          if (div.parentNode) {
+            div.remove();
+          }
+
+          updateBannerVisibility();
+
+        }, 5000);
+
+      }
+
+      updateBannerVisibility();
+
+    }
+
+
+    // Unity WebGLビルド設定
+    const buildUrl = "Build";
+
+    const loaderUrl =
+      buildUrl +
+      "/OneGame珈琲キッチンカーミニゲーム.loader.js";
+
+    const config = {
+
+      arguments: [],
+
+      dataUrl:
+        buildUrl +
+        "/OneGame珈琲キッチンカーミニゲーム.data.unityweb",
+
+      frameworkUrl:
+        buildUrl +
+        "/OneGame珈琲キッチンカーミニゲーム.framework.js.unityweb",
+
+      codeUrl:
+        buildUrl +
+        "/OneGame珈琲キッチンカーミニゲーム.wasm.unityweb",
+
+      streamingAssetsUrl: "StreamingAssets",
+
+      companyName: "DefaultCompany",
+
+      productName: "OneGame珈琲キッチンカー",
+
+      productVersion: "1.0",
+
+      showBanner: unityShowBanner
+
+    };
+
+
+    // 描画解像度はUnity標準設定を使用
+    // devicePixelRatioの制限なし
+    // matchWebGLToCanvasSizeの変更なし
+
+
+    // スマホ・タブレット判定
+    const isMobile =
+      /iPhone|iPad|iPod|Android/i.test(
+        navigator.userAgent
+      ) ||
+      (
+        navigator.platform === "MacIntel" &&
+        navigator.maxTouchPoints > 1
+      );
+
+    if (isMobile) {
+
+      unityContainer.className = "unity-mobile";
+
+      canvas.className = "unity-mobile";
+
+    }
+
+
+    // 読み込み画面表示
+    loadingBar.style.display = "block";
+
+
+    // Unity読み込み
+    const script = document.createElement("script");
+
+    script.src = loaderUrl;
+
+    script.onload = () => {
+
+      createUnityInstance(
+
+        canvas,
+
+        config,
+
+        (progress) => {
+
+          progressBarFull.style.width =
+            (100 * progress) + "%";
+
+        }
+
+      ).then((unityInstance) => {
+
+        loadingBar.style.display = "none";
+
+        resizeUnityGame();
+
+        const fullscreenButton =
+          document.querySelector("#unity-fullscreen-button");
+
+        if (fullscreenButton) {
+
+          fullscreenButton.onclick = () => {
+
+            unityInstance.SetFullscreen(1);
+
+          };
+
+        }
+
+        document.addEventListener(
+          "fullscreenchange",
+          resizeUnityGame
+        );
+
+      }).catch((message) => {
+
+        loadingBar.style.display = "none";
+
+        unityShowBanner(
+          String(message),
+          "error"
+        );
+
+      });
+
+    };
+
+
+    // 読み込み失敗時
+    script.onerror = () => {
+
+      loadingBar.style.display = "none";
+
+      unityShowBanner(
+        "Unityの読み込みに失敗しました。",
+        "error"
+      );
+
+    };
+
+    document.body.appendChild(script);
+
+  </script>
+
+</body>
+</html>
